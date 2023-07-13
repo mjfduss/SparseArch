@@ -19,6 +19,8 @@ from stable_baselines3.common.evaluation import evaluate_policy
 from mchgenalg import GeneticAlgorithm
 import mchgenalg
 import argparse
+from datetime import datetime
+
 
 
 # First, define function that will be used to evaluate the fitness
@@ -107,8 +109,10 @@ if __name__ == "__main__":
     ga.run(1000)
 
     best_genome, best_fitness = ga.get_best_genome()
+    
+    timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
-    with open('hyperparameter_search/BestParameters_' + ENV + '.txt', 'a') as output:
+    with open('hyperparameter_search/BestParameters_' + ENV + '_' + timestamp + '.txt', 'a') as output:
         output.write("gae_lambda = " + str(decode_function(best_genome[0:10])) + '\n')
         output.write("gamma = " + str(decode_function(best_genome[11:22])) + '\n')
         output.write("learning_rate = " + str(decode_function(best_genome[23:33])) + '\n')
