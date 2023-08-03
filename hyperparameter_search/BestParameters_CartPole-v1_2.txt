@@ -1,0 +1,8 @@
+gae_lambda = 0.102
+gamma = 0.796
+learning_rate = 0.733
+clip_range = 0.895
+ent_coef = 0.123
+vf_coef = 0.508
+max_grad_norm = 0.118
+target_kl = 0.589

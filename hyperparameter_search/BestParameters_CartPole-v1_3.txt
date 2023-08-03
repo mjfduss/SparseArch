@@ -1,0 +1,6 @@
+gae_lambda = 0.348
+gamma = 1.253
+learning_rate = 0.009
+clip_range = 0.922
+ent_coef = 0.52
+vf_coef = 0.515

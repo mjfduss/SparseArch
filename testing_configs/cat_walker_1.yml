@@ -1,0 +1,44 @@
+CartPole-v1:
+  normalize: True
+  n_envs: 8
+  n_timesteps: !!float 1e5
+  policy: 'MlpLstmPolicy'
+  n_steps: 32
+  batch_size: 256
+  gae_lambda: 0.341
+  gamma: 0.216
+  n_epochs: 20
+  ent_coef: 0.48
+  vf_coef: 0.533
+  learning_rate: lin_0.028
+  clip_range: lin_0.862
+  policy_kwargs: "dict(
+                    ortho_init=False,
+                    activation_fn=nn.ReLU,
+                    lstm_hidden_size=64,
+                    enable_critic_lstm=True,
+                    net_arch=dict(pi=[64], vf=[64])
+                  )"
+
+
+BipedalWalker-v3:
+  normalize: true
+  n_envs: 32
+  n_timesteps: !!float 5e6
+  policy: 'MlpLstmPolicy'
+  n_steps: 256
+  batch_size: 256
+  gae_lambda: 0.702
+  gamma: 0.851
+  n_epochs: 10
+  ent_coef: 0.018
+  vf_coef: 0.484
+  learning_rate: !!float 3e-3
+  clip_range: 0.18
+  policy_kwargs: "dict(
+                    ortho_init=False,
+                    activation_fn=nn.ReLU,
+                    lstm_hidden_size=64,
+                    enable_critic_lstm=True,
+                    net_arch=dict(pi=[64], vf=[64])
+                  )"
