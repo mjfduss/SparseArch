@@ -22,11 +22,10 @@ import argparse
 from datetime import datetime
 
 
-
 # First, define function that will be used to evaluate the fitness
 def fitness_function(genome):
-    
-    #setting parameter values using genome
+
+    # setting parameter values using genome
     gae_lambda = decode_function(genome[0:10])
     if gae_lambda > 1:
         gae_lambda = 1
@@ -45,8 +44,7 @@ def fitness_function(genome):
     vf_coef = decode_function(genome[56:66])
     if vf_coef > 1:
         vf_coef = 1
-    
-    
+
     model = RecurrentPPO(
         policy="MlpLstmPolicy",
         env=ENV,
@@ -56,31 +54,37 @@ def fitness_function(genome):
         clip_range=clip_range,
         ent_coef=ent_coef,
         vf_coef=vf_coef,
+        verbose=0
     )
     model.learn(TIMESTEPS)
 
     env = model.get_env()
-    mean_reward, std_reward = evaluate_policy(model, env, n_eval_episodes=10, warn=False)
-    
+    mean_reward, std_reward = evaluate_policy(
+        model, env, n_eval_episodes=10, warn=False)
+
     return mean_reward - std_reward
+
 
 def decode_function(genome_partial):
 
     prod = 0
-    for i,e in reversed(list(enumerate(genome_partial))):
+    for i, e in reversed(list(enumerate(genome_partial))):
         if e == False:
             prod += 0
         else:
             prod += 2**abs(i-len(genome_partial)+1)
     return prod/1000
 
+
 if __name__ == "__main__":
-    
+
     parser = argparse.ArgumentParser()
-    parser.add_argument("--env", type=str, default="CartPole-v1", help="environment ID")
-    parser.add_argument("-n", "--n-timesteps", help="number of timesteps", default=100, type=int)
+    parser.add_argument("--env", type=str,
+                        default="CartPole-v1", help="environment ID")
+    parser.add_argument("-n", "--n-timesteps",
+                        help="number of timesteps", default=50, type=int)
     args = parser.parse_args()
-    
+
     ENV = args.env
     TIMESTEPS = args.n_timesteps
 
@@ -88,36 +92,43 @@ if __name__ == "__main__":
     population_size = 30
     genome_length = 66
     ga = GeneticAlgorithm(fitness_function)
-    ga.generate_binary_population(size=population_size, genome_length=genome_length)
+    ga.generate_binary_population(
+        size=population_size, genome_length=genome_length)
 
     # How many pairs of individuals should be picked to mate
-    ga.number_of_pairs = 5
+    ga.number_of_pairs = 12
 
     # Selective pressure from interval [1.0, 2.0]
     # the lower value, the less will the fitness play role
     ga.selective_pressure = 1.5
-    ga.mutation_rate = 0.1
+    ga.mutation_rate = 0.01
 
     # If two parents have the same genotype, ignore them and generate TWO random parents
     # This helps preventing premature convergence
-    ga.allow_random_parent = True # default True
+    ga.allow_random_parent = True  # default True
     # Use single point crossover instead of uniform crossover
-    ga.single_point_cross_over = False # default False
+    ga.single_point_cross_over = False  # default False
 
     print("starting GA run for ", ENV)
 
-    ga.run(1000)
+    ga.run(30)
 
     best_genome, best_fitness = ga.get_best_genome()
-    
+
     timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
     with open('hyperparameter_search/BestParameters_' + ENV + '_' + timestamp + '.txt', 'a') as output:
-        output.write("gae_lambda = " + str(decode_function(best_genome[0:10])) + '\n')
-        output.write("gamma = " + str(decode_function(best_genome[11:22])) + '\n')
-        output.write("learning_rate = " + str(decode_function(best_genome[23:33])) + '\n')
-        output.write("clip_range = " + str(decode_function(best_genome[34:44])) + '\n')
-        output.write("ent_coef = " + str(decode_function(best_genome[45:55])) + '\n')
-        output.write("vf_coef = " + str(decode_function(best_genome[56:66])) + '\n')
+        output.write("gae_lambda: " +
+                     str(decode_function(best_genome[0:10])) + '\n')
+        output.write(
+            "gamma: " + str(decode_function(best_genome[11:22])) + '\n')
+        output.write("learning_rate: " +
+                     str(decode_function(best_genome[23:33])) + '\n')
+        output.write("clip_range: " +
+                     str(decode_function(best_genome[34:44])) + '\n')
+        output.write("ent_coef: " +
+                     str(decode_function(best_genome[45:55])) + '\n')
+        output.write("vf_coef: " +
+                     str(decode_function(best_genome[56:66])) + '\n')
 
     print("done")
