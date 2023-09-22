@@ -4,3 +4,6 @@
 [submodule "bridge_designer_cpp"]
 	path = bridge_designer_cpp
 	url = https://github.com/mjfduss/bridge_designer_cpp
+[submodule "bridge_designer_java"]
+	path = bridge_designer_java
+	url = https://github.com/mjfduss/bridge_designer_java
