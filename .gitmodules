@@ -1,3 +1,6 @@
 [submodule "rl-baselines3-zoo"]
 	path = rl-baselines3-zoo
 	url = https://github.com/mjfduss/rl-baselines3-zoo
+[submodule "bridge_designer_cpp"]
+	path = bridge_designer_cpp
+	url = https://github.com/mjfduss/bridge_designer_cpp
