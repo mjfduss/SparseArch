@@ -4,6 +4,10 @@
     },
     "python.formatting.provider": "none",
     "files.associations": {
-        "internal.h": "c"
+        "internal.h": "c",
+        "judge.h": "c",
+        "cstdlib": "c",
+        "random": "c",
+        "types.h": "c"
     }
 }
