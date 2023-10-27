@@ -2,5 +2,12 @@
     "[python]": {
         "editor.defaultFormatter": "ms-python.autopep8"
     },
-    "python.formatting.provider": "none"
+    "python.formatting.provider": "none",
+    "files.associations": {
+        "internal.h": "c",
+        "judge.h": "c",
+        "cstdlib": "c",
+        "random": "c",
+        "types.h": "c"
+    }
 }
