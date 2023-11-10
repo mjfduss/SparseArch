@@ -1,13 +1,40 @@
 {
     "[python]": {
-        "editor.defaultFormatter": "ms-python.autopep8"
+        "editor.defaultFormatter": "ms-python.autopep8",
+        "editor.formatOnSave": true
     },
-    "python.formatting.provider": "none",
+    "python.formatting.provider": "autopep8",
     "files.associations": {
         "internal.h": "c",
         "judge.h": "c",
         "cstdlib": "c",
         "random": "c",
-        "types.h": "c"
-    }
+        "types.h": "c",
+        "spng.h": "c",
+        "array": "c",
+        "*.tcc": "c",
+        "bitset": "c",
+        "string": "c",
+        "vector": "c",
+        "string_view": "c",
+        "functional": "c",
+        "istream": "c",
+        "limits": "c",
+        "ostream": "c",
+        "ratio": "c",
+        "stop_token": "c",
+        "streambuf": "c",
+        "tuple": "c",
+        "__config": "c",
+        "__hash_table": "c",
+        "__locale": "c",
+        "ios": "c",
+        "iterator": "c",
+        "locale": "c",
+        "thread": "c",
+        "type_traits": "c",
+        "*.inc": "c",
+        "api.h": "c"
+    },
+    "python.terminal.activateEnvInCurrentTerminal": true
 }
