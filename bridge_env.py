@@ -39,6 +39,7 @@ print("action space sample", env.action_space.sample())
 print("action space sample", env.action_space.sample())
 print("observation space shape", env.observation_space.shape)
 print("observation space sample", env.observation_space.sample())
+env.bridge.analyze()
 """
 member_added = env.bridge.add_member(3, 4, 1, 2, 0, 0, 3)
 print("member_added:", member_added)
