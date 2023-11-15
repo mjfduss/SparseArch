@@ -30,17 +30,27 @@ class BridgeEnv(gym.Env):
 
 
 # Testing code
+
 env = BridgeEnv()
+for _ in range(4):
+    a = env.action_space.sample()
+    member_added = env.bridge.add_member(
+        a[0], a[1], a[2], a[3], a[4], a[5], a[6]
+    )
+    print("member_added:", member_added)
+
+valid, cost = env.bridge.analyze(test_print=True)
+print("bridge valid:", valid)
+print(f"bridge cost ${cost}")
+"""
 print("action space shape", env.action_space.shape)
-print("action space sample", env.action_space.sample())
+print("action space sample", )
 print("action space sample", env.action_space.sample())
 print("action space sample", env.action_space.sample())
 print("action space sample", env.action_space.sample())
 print("action space sample", env.action_space.sample())
 print("observation space shape", env.observation_space.shape)
 print("observation space sample", env.observation_space.sample())
-env.bridge.analyze()
-"""
 member_added = env.bridge.add_member(3, 4, 1, 2, 0, 0, 3)
 print("member_added:", member_added)
 print(env.bridge.n_joints)

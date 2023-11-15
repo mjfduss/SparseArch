@@ -36,5 +36,6 @@
         "*.inc": "c",
         "api.h": "c"
     },
-    "python.terminal.activateEnvInCurrentTerminal": true
+    "python.terminal.activateEnvInCurrentTerminal": true,
+    "python.analysis.typeCheckingMode": "basic"
 }
