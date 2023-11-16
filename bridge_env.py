@@ -1,13 +1,66 @@
 import gymnasium as gym
 import numpy as np
 from gymnasium import spaces
-from py_bridge_designer.bridge import Bridge
+from typing import Tuple
+from py_bridge_designer.bridge import Bridge, BridgeError
 
 
 class BridgeEnv(gym.Env):
-    def __init__(self, load_scenario_index=0, seed=42):
-        super().__init__()
-        self.bridge = Bridge(load_scenario_index)
+    metadata = {"render_modes": ["rgb_array"], "render_fps": 4}
+
+    def __init__(self, render_mode=None):
+        self.reward_range = (-np.inf, 0)
+        assert render_mode is None or render_mode in self.metadata["render_modes"]
+        self.render_mode = render_mode
+
+    def _rand_load_scenario_index(self) -> int:
+        return int(self.np_random.uniform(low=0, high=392))
+
+    def _calculate_reward(self,
+                          bridge_valid: bool,
+                          bridge_error: BridgeError,
+                          bridge_cost: float) -> Tuple[float, bool]:
+        if bridge_valid:
+            terminated = True
+            return -bridge_cost, terminated
+        else:
+            if bridge_error == BridgeError.BridgeAtMaxJoints:
+                terminated = True
+                penalty = 100
+                return -bridge_cost * penalty, terminated
+            elif bridge_error == BridgeError.BridgeJointOutOfBounds:
+                terminated = False
+                return -2, terminated
+            else:
+                terminated = False
+                return -1, terminated
+
+    def _get_observation(self):
+        """This should not be called before reset()"""
+        return np.array(self.bridge.get_state(), dtype=np.int16)
+
+    def _get_info(self):
+        """This should not be called before reset()"""
+        return {
+            "scenario_id": self.bridge.load_scenario.desc.id,
+            "scenario_site_cost": self.bridge.load_scenario.desc.site_cost
+        }
+
+    def reset(self, seed=None, options={"load_scenario_index": None, "test_print": False}):
+        super().reset(seed=seed)
+
+        # Select a random load_scenario_index if needed
+        if options is not None and options["load_scenario_index"] is None:
+            options["load_scenario_index"] = self._rand_load_scenario_index()
+        else:
+            options = {
+                "load_scenario_index": self._rand_load_scenario_index(),
+                "test_print": False
+            }
+        self.options = options
+
+        # Init the bridge
+        self.bridge = Bridge(self.options["load_scenario_index"])
 
         # Define action space
         max_x_action = self.bridge.load_scenario.max_x + 1
@@ -28,10 +81,32 @@ class BridgeEnv(gym.Env):
             n=[2, self.bridge.matrix_y, self.bridge.matrix_x],
             seed=seed)
 
+        # Return the observation and info
+        observation = self._get_observation()
+        info = self._get_info()
 
+        return observation, info
+
+    def step(self, action):
+        bridge_error = self.bridge.add_member(
+            action[0], action[1], action[2], action[3], action[4], action[5], action[6])
+
+        bridge_valid, bridge_cost = self.bridge.analyze(
+            self.options["test_print"])
+
+        reward, terminated = self._calculate_reward(
+            bridge_valid, bridge_error, bridge_cost)
+
+        observation = self._get_observation()
+        info = self._get_info()
+
+        return observation, reward, terminated, False, info
+
+
+"""
 # Testing code
-
-env = BridgeEnv(load_scenario_index=6)
+env = BridgeEnv()
+# load_scenario_index=6
 # lower deck joints     [(0, 0), (16, 0), (32, 0), (48, 0), (64, 0), (80, 0)])
 # guess at upper joints [(8, 16), (24, 16), (40, 16), (56, 16), (72, 16)]
 # material = 0, section = 0, size = 18
@@ -68,6 +143,7 @@ for a in valid_actions:
 valid, cost = env.bridge.analyze(test_print=False)
 print("bridge valid:", valid)
 print(f"bridge cost {cost}")
+"""
 """
 print("action space shape", env.action_space.shape)
 print("action space sample", )
