@@ -31,17 +31,43 @@ class BridgeEnv(gym.Env):
 
 # Testing code
 
-env = BridgeEnv()
-for _ in range(4):
-    a = env.action_space.sample()
+env = BridgeEnv(load_scenario_index=6)
+# lower deck joints     [(0, 0), (16, 0), (32, 0), (48, 0), (64, 0), (80, 0)])
+# guess at upper joints [(8, 16), (24, 16), (40, 16), (56, 16), (72, 16)]
+# material = 0, section = 0, size = 18
+valid_actions = [
+    [0, 0, 8, 16, 0, 0, 18],
+    [0, 0, 16, 0, 0, 0, 18],
+    [16, 0, 8, 16, 0, 0, 18],
+    [16, 0, 24, 16, 0, 0, 18],
+    [32, 0, 24, 16, 0, 0, 18],
+    [16, 0, 32, 0, 0, 0, 18],
+    [32, 0, 48, 0, 0, 0, 18],
+    [32, 0, 40, 16, 0, 0, 18],
+    [48, 0, 40, 16, 0, 0, 18],
+    [48, 0, 64, 0, 0, 0, 18],
+    [48, 0, 56, 16, 0, 0, 18],
+    [64, 0, 56, 16, 0, 0, 18],
+    [64, 0, 80, 0, 0, 0, 18],
+    [64, 0, 72, 16, 0, 0, 18],
+    [80, 0, 72, 16, 0, 0, 18],
+    [56, 16, 72, 16, 0, 0, 18],
+    [56, 16, 40, 16, 0, 0, 18],
+    [24, 16, 40, 16, 0, 0, 18],
+    [24, 16, 8, 16, 0, 0, 18]
+]
+
+for a in valid_actions:
+    # a = env.action_space.sample()
     member_added = env.bridge.add_member(
         a[0], a[1], a[2], a[3], a[4], a[5], a[6]
     )
-    print("member_added:", member_added)
+    if not member_added:
+        print("member not added from action:", a)
 
-valid, cost = env.bridge.analyze(test_print=True)
+valid, cost = env.bridge.analyze(test_print=False)
 print("bridge valid:", valid)
-print(f"bridge cost ${cost}")
+print(f"bridge cost {cost}")
 """
 print("action space shape", env.action_space.shape)
 print("action space sample", )
