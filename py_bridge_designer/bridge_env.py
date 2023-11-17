@@ -3,7 +3,7 @@ import gymnasium as gym
 import numpy as np
 from gymnasium import spaces
 from typing import Tuple
-from py_bridge_designer.bridge import Bridge, BridgeError
+from bridge import Bridge, BridgeError
 from stable_baselines3.common.env_checker import check_env
 
 
@@ -126,6 +126,7 @@ class BridgeEnv(gym.Env):
 # Testing code
 env = BridgeEnv()
 check_env(env)
+"""
 EPISODES = 10
 step_counts = []
 for e in range(EPISODES):
@@ -159,7 +160,7 @@ for e in range(EPISODES):
     print(f"~~~~~~~~ Terminal Error: {terminal_error}")
     step_counts.append(step_count)
 print(f"Mean Steps: {statistics.mean(step_counts)}")
-
+"""
 """
 # load_scenario_index=6
 # lower deck joints     [(0, 0), (16, 0), (32, 0), (48, 0), (64, 0), (80, 0)])
