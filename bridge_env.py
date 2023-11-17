@@ -1,17 +1,44 @@
+import statistics
 import gymnasium as gym
 import numpy as np
 from gymnasium import spaces
 from typing import Tuple
 from py_bridge_designer.bridge import Bridge, BridgeError
+from stable_baselines3.common.env_checker import check_env
 
 
 class BridgeEnv(gym.Env):
     metadata = {"render_modes": ["rgb_array"], "render_fps": 4}
 
-    def __init__(self, render_mode=None):
+    def __init__(self, render_mode=None, options={"load_scenario_index": None, "test_print": False}):
         self.reward_range = (-np.inf, 0)
         assert render_mode is None or render_mode in self.metadata["render_modes"]
         self.render_mode = render_mode
+
+        # Select a random load_scenario_index if needed
+        if options is not None and options["load_scenario_index"] is None:
+            options["load_scenario_index"] = int(
+                np.random.uniform(low=0, high=392))
+        else:
+            options = {
+                "load_scenario_index": int(
+                    np.random.uniform(low=0, high=392)),
+                "test_print": False
+            }
+        self.options = options
+
+        # Init the bridge
+        self.bridge = Bridge(self.options["load_scenario_index"])
+
+        # Define action space
+        action_size = self.bridge.get_size_of_add_member_parameters()
+
+        self.action_space = spaces.MultiDiscrete(
+            nvec=action_size, dtype=np.int16)
+
+        # Define observation space
+        self.observation_space = spaces.MultiBinary(
+            n=[2, self.bridge.matrix_y, self.bridge.matrix_x])
 
     def _rand_load_scenario_index(self) -> int:
         return int(self.np_random.uniform(low=0, high=392))
@@ -19,7 +46,7 @@ class BridgeEnv(gym.Env):
     def _calculate_reward(self,
                           bridge_valid: bool,
                           bridge_error: BridgeError,
-                          bridge_cost: float) -> Tuple[float, bool]:
+                          bridge_cost: float) -> Tuple[int, bool]:
         if bridge_valid:
             terminated = True
             return -bridge_cost, terminated
@@ -37,13 +64,14 @@ class BridgeEnv(gym.Env):
 
     def _get_observation(self):
         """This should not be called before reset()"""
-        return np.array(self.bridge.get_state(), dtype=np.int16)
+        return np.array(self.bridge.get_state(), dtype=np.int8)
 
-    def _get_info(self):
+    def _get_info(self, current_error=BridgeError.BridgeNoError):
         """This should not be called before reset()"""
         return {
             "scenario_id": self.bridge.load_scenario.desc.id,
-            "scenario_site_cost": self.bridge.load_scenario.desc.site_cost
+            "scenario_site_cost": self.bridge.load_scenario.desc.site_cost,
+            "current_error": current_error
         }
 
     def reset(self, seed=None, options={"load_scenario_index": None, "test_print": False}):
@@ -63,18 +91,10 @@ class BridgeEnv(gym.Env):
         self.bridge = Bridge(self.options["load_scenario_index"])
 
         # Define action space
-        max_x_action = self.bridge.load_scenario.max_x + 1
-        max_y_action = self.bridge.max_y + 1
-        min_x_action_value = self.bridge.load_scenario.min_x
-        min_y_action_value = self.bridge.min_y
+        action_size = self.bridge.get_size_of_add_member_parameters()
 
         self.action_space = spaces.MultiDiscrete(
-            nvec=[max_x_action, max_y_action, max_x_action, max_y_action, self.bridge.max_material_types,
-                  self.bridge.max_section_types, self.bridge.max_section_size],
-            start=[min_x_action_value, min_y_action_value,
-                   min_x_action_value, min_y_action_value, 0, 0, 0],
-            dtype=np.int16,
-            seed=seed)
+            nvec=action_size, dtype=np.int16, seed=seed)
 
         # Define observation space
         self.observation_space = spaces.MultiBinary(
@@ -98,14 +118,49 @@ class BridgeEnv(gym.Env):
             bridge_valid, bridge_error, bridge_cost)
 
         observation = self._get_observation()
-        info = self._get_info()
+        info = self._get_info(current_error=bridge_error)
 
         return observation, reward, terminated, False, info
 
 
-"""
 # Testing code
 env = BridgeEnv()
+check_env(env)
+EPISODES = 10
+step_counts = []
+for e in range(EPISODES):
+    obs = env.reset()
+    done = False
+    step_count = 0
+    rewards = []
+    terminal_reward = 0
+    terminal_error = 0
+    print("=====================================")
+    print(f"Episode {e+1}")
+    print("=====================================")
+    while not done:
+        action = env.action_space.sample()  # would pass obs to real network
+        obs, reward, terminated, _, info = env.step(action)
+        rewards.append(reward)
+        if step_count % 10 == 0:
+            print(f"Step: {step_count}; Action: {action}")
+            print(f"Reward: {reward}; Error: {info['current_error']}")
+        if terminated:
+            terminal_reward = reward
+            terminal_error = info['current_error']
+            done = True
+        else:
+            step_count += 1
+    print(f"~~~~~~~~ Episode {e+1} done ~~~~~~~~")
+    print(f"~~~~~~~~ Step Total: {step_count+1}")
+    print(f"~~~~~~~~ Mean Step Rewards: {statistics.mean(rewards[:-1])}")
+    print(f"~~~~~~~~ Terminal Reward: {terminal_reward}")
+    print(f"~~~~~~~~ Total Rewards: {sum(rewards)}")
+    print(f"~~~~~~~~ Terminal Error: {terminal_error}")
+    step_counts.append(step_count)
+print(f"Mean Steps: {statistics.mean(step_counts)}")
+
+"""
 # load_scenario_index=6
 # lower deck joints     [(0, 0), (16, 0), (32, 0), (48, 0), (64, 0), (80, 0)])
 # guess at upper joints [(8, 16), (24, 16), (40, 16), (56, 16), (72, 16)]
