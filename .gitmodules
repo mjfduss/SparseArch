@@ -1,3 +1,4 @@
 [submodule "rl-baselines3-zoo"]
 	path = rl-baselines3-zoo
 	url = https://github.com/mjfduss/rl-baselines3-zoo
+	branch = master
