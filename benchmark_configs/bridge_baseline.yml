@@ -11,6 +11,7 @@ BridgeEnv:
   ent_coef: 0.0
   learning_rate: lin_0.001
   clip_range: lin_0.2
+  monitor_kwargs:"dict(info_keywords=('bridge_valid','current_error',))"
   policy_kwargs: "dict(
                     ortho_init=False,
                     activation_fn=nn.ReLU,
